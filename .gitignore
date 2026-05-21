@@ -1,0 +1,11 @@
+node_modules/
+dist/
+/interstellar__endurance_high_fidelity.glb
+/ost.weba
+.DS_Store
+*.log
+.env
+.env.*
+.vscode/
+.idea/
+*.local
