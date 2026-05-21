@@ -1,3 +1,5 @@
+import { ASSETS } from '../config/paths.js';
+
 // AAA Procedural Audio Engine
 // Synthesizes UI hover clicks, key taps, cosmic sweeps, and Morse signals
 
@@ -204,7 +206,7 @@ class AudioEngine {
   
   initSoundtrack() {
     if (this.soundtrack) return;
-    this.soundtrack = new Audio('/ost.weba');
+    this.soundtrack = new Audio(ASSETS.soundtrack);
     this.soundtrack.loop = true;
     this.soundtrack.volume = 0;
   }

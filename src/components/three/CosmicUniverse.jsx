@@ -4,6 +4,7 @@ import { Stars, useGLTF, Center } from '@react-three/drei';
 import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing';
 import * as THREE from 'three';
 import useStore from '../../store/useStore';
+import { ASSETS } from '../../config/paths.js';
 import { wormholeVertex, wormholeFragment } from './shaders';
 
 function WormholePlane() {
@@ -121,7 +122,7 @@ function Satellite({ orbit, speed, offset }) {
 function EnduranceShip() {
   const ref = useRef();
   const scrollProgress = useStore((s) => s.scrollProgress);
-  const { scene } = useGLTF('/interstellar__endurance_high_fidelity.glb');
+  const { scene } = useGLTF(ASSETS.enduranceModel);
 
   useFrame((state) => {
     const t = state.clock.getElapsedTime();
@@ -205,7 +206,7 @@ export default function CosmicUniverse() {
 }
 
 try {
-  useGLTF.preload('/interstellar__endurance_high_fidelity.glb');
+  useGLTF.preload(ASSETS.enduranceModel);
 } catch {
   /* model optional */
 }
