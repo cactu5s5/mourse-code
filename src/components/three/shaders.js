@@ -49,9 +49,9 @@ export const wormholeFragment = `
     vec2 warped = uv + normalize(delta) * lens * 0.035;
     warped += vec2(sin(uTime * 0.1 + uScroll * 2.0) * 0.002, cos(uTime * 0.08) * 0.002);
 
-    float n1 = snoise(warped * 2.5 + uTime * 0.06) * 0.5 + 0.5;
-    float n2 = snoise(warped * 5.0 - uTime * 0.1) * 0.5 + 0.5;
-    float n3 = snoise(warped * 11.0 + uTime * 0.04) * 0.5 + 0.5;
+    float n1 = snoise(warped * 2.5 + uTime * 0.14) * 0.5 + 0.5;
+    float n2 = snoise(warped * 5.0 - uTime * 0.22) * 0.5 + 0.5;
+    float n3 = snoise(warped * 11.0 + uTime * 0.1) * 0.5 + 0.5;
 
     vec3 col = vec3(0.008, 0.012, 0.028);
     col = mix(col, vec3(0.04, 0.1, 0.22), n1 * 0.45);
@@ -61,7 +61,8 @@ export const wormholeFragment = `
     // Wormhole accretion ring
     float ringDist = abs(dist - 0.22 - uScroll * 0.05);
     float ring = smoothstep(0.06, 0.0, ringDist);
-    col += vec3(0.2, 0.65, 0.95) * ring * (0.7 + uPulse * 0.5);
+    float ringPulse = 0.75 + 0.25 * sin(uTime * 1.8);
+    col += vec3(0.2, 0.65, 0.95) * ring * ringPulse * (0.7 + uPulse * 0.5);
 
     // Event horizon
     float core = smoothstep(0.1, 0.0, dist);

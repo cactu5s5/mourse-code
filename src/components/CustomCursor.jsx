@@ -6,8 +6,11 @@ import { getDeviceProfile } from '../utils/deviceProfile';
 
 export default function CustomCursor() {
   const [enabled] = useState(() => {
-    const p = getDeviceProfile();
-    return p.enableLenis && !p.lite;
+    if (typeof window === 'undefined') return false;
+    return (
+      !window.matchMedia('(pointer: coarse)').matches &&
+      !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    );
   });
   const trailRef = useRef([]);
   const setMouse = useStore((s) => s.setMouse);

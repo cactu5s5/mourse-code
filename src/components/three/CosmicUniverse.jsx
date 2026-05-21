@@ -101,12 +101,30 @@ function CinematicCamera() {
   const scrollProgress = useStore((s) => s.scrollProgress);
   useFrame((state) => {
     const t = state.clock.getElapsedTime();
-    state.camera.position.x = Math.sin(t * 0.08) * 0.3;
-    state.camera.position.y = 1.2 + Math.sin(t * 0.12) * 0.15 - scrollProgress * 0.8;
+    state.camera.position.x = Math.sin(t * 0.08) * 0.35;
+    state.camera.position.y = 1.2 + Math.sin(t * 0.12) * 0.18 - scrollProgress * 0.8;
     state.camera.position.z = 8 - scrollProgress * 2;
     state.camera.lookAt(0, scrollProgress * -0.3, 0);
   });
   return null;
+}
+
+function OrbitingPlanet({ radius, speed, size, color, offset }) {
+  const ref = useRef();
+  useFrame((state) => {
+    const t = state.clock.getElapsedTime() * speed + offset;
+    if (ref.current) {
+      ref.current.position.x = Math.cos(t) * radius;
+      ref.current.position.z = Math.sin(t) * radius - 8;
+      ref.current.position.y = Math.sin(t * 0.5) * 0.35;
+    }
+  });
+  return (
+    <mesh ref={ref}>
+      <sphereGeometry args={[size, 24, 24]} />
+      <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.2} roughness={0.85} />
+    </mesh>
+  );
 }
 
 function SceneContent({ profile }) {
@@ -120,7 +138,14 @@ function SceneContent({ profile }) {
 
       <WormholePlane />
       <DustField count={profile.dustCount} />
-      <Stars radius={130} depth={60} count={profile.starCount} factor={3} saturation={0.2} fade speed={0.4} />
+      <Stars radius={130} depth={60} count={profile.starCount} factor={4} saturation={0.35} fade speed={1.2} />
+
+      {profile.enablePlanets && (
+        <>
+          <OrbitingPlanet radius={5.5} speed={0.14} size={0.28} color="#1e3a5f" offset={0} />
+          <OrbitingPlanet radius={8} speed={0.09} size={0.18} color="#312e81" offset={2} />
+        </>
+      )}
 
       {profile.enableShip && (
         <Suspense fallback={null}>
@@ -134,8 +159,8 @@ function SceneContent({ profile }) {
 
       {profile.enablePostFX && (
         <EffectComposer multisampling={0}>
-          <Bloom intensity={0.35} luminanceThreshold={0.25} mipmapBlur />
-          <Vignette eskil={false} offset={0.15} darkness={0.8} />
+          <Bloom intensity={profile.bloomIntensity} luminanceThreshold={0.2} luminanceSmoothing={0.85} mipmapBlur />
+          <Vignette eskil={false} offset={0.12} darkness={0.75} />
         </EffectComposer>
       )}
     </>
@@ -181,7 +206,7 @@ export default function CosmicUniverse() {
           powerPreference: 'default',
           failIfMajorPerformanceCaveat: false,
         }}
-        dpr={[1, 1.25]}
+        dpr={[1, Math.min(1.75, typeof window !== 'undefined' ? window.devicePixelRatio : 1.5)]}
         frameloop="always"
         style={{ pointerEvents: 'none' }}
         onCreated={({ gl }) => gl.setClearColor('#020406')}

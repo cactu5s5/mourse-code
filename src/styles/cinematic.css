@@ -1,5 +1,74 @@
 /* AAA Cinematic layer — hero, cursor, pulses, radar */
 
+/* CSS starfield — always animates */
+.css-starfield {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  background: #020406;
+}
+
+.css-starfield-layer {
+  position: absolute;
+  inset: -20%;
+  opacity: 0.5;
+  background-repeat: repeat;
+}
+
+.css-starfield-layer.layer-1 {
+  background-image: radial-gradient(1.5px 1.5px at 50px 80px, rgba(255, 255, 255, 0.55), transparent),
+    radial-gradient(1px 1px at 120px 40px, rgba(148, 200, 255, 0.4), transparent);
+  background-size: 280px 280px;
+  animation: drift-stars-1 90s linear infinite;
+}
+
+.css-starfield-layer.layer-2 {
+  background-image: radial-gradient(1px 1px at 30px 60px, rgba(255, 255, 255, 0.35), transparent);
+  background-size: 200px 200px;
+  animation: drift-stars-2 140s linear infinite reverse;
+  opacity: 0.35;
+}
+
+.css-starfield-layer.layer-3 {
+  background-image: radial-gradient(2px 2px at 70px 100px, rgba(56, 189, 248, 0.25), transparent);
+  background-size: 360px 360px;
+  animation: drift-stars-3 200s linear infinite;
+  opacity: 0.25;
+}
+
+.css-nebula-pulse {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 45% 35% at 50% 42%, rgba(56, 189, 248, 0.12) 0%, transparent 65%);
+  animation: nebula-pulse 8s ease-in-out infinite;
+}
+
+@keyframes drift-stars-1 {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-280px, -140px, 0); }
+}
+
+@keyframes drift-stars-2 {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(200px, 120px, 0); }
+}
+
+@keyframes drift-stars-3 {
+  from { transform: translate3d(0, 0, 0) rotate(0deg); }
+  to { transform: translate3d(-120px, 80px, 0) rotate(2deg); }
+}
+
+@keyframes nebula-pulse {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.08); }
+}
+
+.morse-orbit-char {
+  display: inline-block;
+}
+
 body.custom-cursor-active,
 body.custom-cursor-active * {
   cursor: none !important;
@@ -45,6 +114,8 @@ body.cursor-click .cosmic-cursor-dot {
 
 .hero-cinematic {
   min-height: 100vh;
+  z-index: 5;
+  position: relative;
 }
 
 .hero-title {
@@ -79,9 +150,15 @@ body.cursor-click .cosmic-cursor-dot {
   height: 280px;
   left: 50%;
   top: 45%;
-  transform: translate(-50%, -50%);
   pointer-events: none;
-  opacity: 0.5;
+  opacity: 0.65;
+  z-index: 2;
+  animation: orbit-spin 48s linear infinite;
+}
+
+@keyframes orbit-spin {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
 .signal-scanner {
