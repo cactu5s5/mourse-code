@@ -1,6 +1,7 @@
 import React, { useEffect, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import BootLoader from './components/BootLoader';
+import ErrorBoundary from './components/ErrorBoundary';
 import CosmicUniverse from './components/three/CosmicUniverse';
 import CustomCursor from './components/CustomCursor';
 import HeroSection from './components/HeroSection';
@@ -75,7 +76,12 @@ export default function App() {
           animate={{ opacity: 1 }}
           transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
         >
-          <CosmicUniverse />
+          <ErrorBoundary
+            label="3D telemetry"
+            fallback={<div className="fixed inset-0 z-0 bg-[#020406]" aria-hidden />}
+          >
+            <CosmicUniverse />
+          </ErrorBoundary>
           <CustomCursor />
           <NavHUD />
           <AudioHUD />

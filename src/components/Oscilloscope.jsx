@@ -11,7 +11,9 @@ export default function Oscilloscope({ audioEngine }) {
     const ctx = canvas.getContext('2d');
 
     const resize = () => {
-      const r = canvas.parentNode.getBoundingClientRect();
+      const parent = canvas.parentNode;
+      if (!parent) return;
+      const r = parent.getBoundingClientRect();
       const dpr = window.devicePixelRatio || 1;
       canvas.width = r.width * dpr;
       canvas.height = (r.height || 150) * dpr;

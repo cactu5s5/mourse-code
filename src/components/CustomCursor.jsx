@@ -1,9 +1,14 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion, useSpring } from 'framer-motion';
 import useStore from '../store/useStore';
 import audioEngine from './AudioEngine';
+import { getDeviceProfile } from '../utils/deviceProfile';
 
 export default function CustomCursor() {
+  const [enabled] = useState(() => {
+    const p = getDeviceProfile();
+    return p.enableLenis && !p.lite;
+  });
   const trailRef = useRef([]);
   const setMouse = useStore((s) => s.setMouse);
   const springConfig = { damping: 28, stiffness: 280, mass: 0.5 };
@@ -13,8 +18,7 @@ export default function CustomCursor() {
   const ringY = useSpring(0, { ...springConfig, damping: 20, stiffness: 120 });
 
   useEffect(() => {
-    const isTouch = window.matchMedia('(pointer: coarse)').matches;
-    if (isTouch) return;
+    if (!enabled) return;
 
     document.body.classList.add('custom-cursor-active');
 
@@ -42,11 +46,9 @@ export default function CustomCursor() {
       window.removeEventListener('mousedown', down);
       window.removeEventListener('mouseup', up);
     };
-  }, [cursorX, cursorY, ringX, ringY, setMouse]);
+  }, [enabled, cursorX, cursorY, ringX, ringY, setMouse]);
 
-  if (typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches) {
-    return null;
-  }
+  if (!enabled) return null;
 
   return (
     <>

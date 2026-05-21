@@ -113,6 +113,31 @@ const useStore = create(
     }),
     {
       name: 'endurance-morse-store',
+      version: 1,
+      skipHydration: false,
+      storage: {
+        getItem: (name) => {
+          try {
+            return localStorage.getItem(name);
+          } catch {
+            return null;
+          }
+        },
+        setItem: (name, value) => {
+          try {
+            localStorage.setItem(name, value);
+          } catch {
+            /* quota / private mode */
+          }
+        },
+        removeItem: (name) => {
+          try {
+            localStorage.removeItem(name);
+          } catch {
+            /* ignore */
+          }
+        },
+      },
       partialize: (s) => ({
         history: s.history,
         favorites: s.favorites,

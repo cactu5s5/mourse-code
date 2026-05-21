@@ -1,10 +1,11 @@
-import React, { useRef, useMemo, Suspense } from 'react';
+import React, { useRef, useMemo, Suspense, useState, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Stars, useGLTF, Center } from '@react-three/drei';
 import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing';
 import * as THREE from 'three';
 import useStore from '../../store/useStore';
 import { ASSETS } from '../../config/paths.js';
+import { getDeviceProfile } from '../../utils/deviceProfile.js';
 import { wormholeVertex, wormholeFragment } from './shaders';
 
 function WormholePlane() {
@@ -48,7 +49,7 @@ function WormholePlane() {
   );
 }
 
-function DustField({ count = 800 }) {
+function DustField({ count }) {
   const ref = useRef();
   const positions = useMemo(() => {
     const arr = new Float32Array(count * 3);
@@ -78,47 +79,6 @@ function DustField({ count = 800 }) {
   );
 }
 
-function OrbitingPlanet({ radius, speed, size, color, offset }) {
-  const ref = useRef();
-  useFrame((state) => {
-    const t = state.clock.getElapsedTime() * speed + offset;
-    if (ref.current) {
-      ref.current.position.x = Math.cos(t) * radius;
-      ref.current.position.z = Math.sin(t) * radius - 8;
-      ref.current.position.y = Math.sin(t * 0.5) * 0.4;
-    }
-  });
-  return (
-    <mesh ref={ref}>
-      <sphereGeometry args={[size, 32, 32]} />
-      <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.15} roughness={0.8} metalness={0.2} />
-    </mesh>
-  );
-}
-
-function Satellite({ orbit, speed, offset }) {
-  const ref = useRef();
-  useFrame((state) => {
-    const t = state.clock.getElapsedTime() * speed + offset;
-    if (ref.current) {
-      ref.current.position.set(Math.cos(t) * orbit, Math.sin(t * 2) * 0.3 + 1, Math.sin(t) * orbit - 5);
-      ref.current.rotation.y = t;
-    }
-  });
-  return (
-    <group ref={ref}>
-      <mesh>
-        <boxGeometry args={[0.08, 0.04, 0.12]} />
-        <meshStandardMaterial color="#94a3b8" metalness={0.9} roughness={0.2} />
-      </mesh>
-      <mesh position={[0.12, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-        <boxGeometry args={[0.2, 0.01, 0.08]} />
-        <meshStandardMaterial color="#38bdf8" emissive="#38bdf8" emissiveIntensity={0.3} />
-      </mesh>
-    </group>
-  );
-}
-
 function EnduranceShip() {
   const ref = useRef();
   const scrollProgress = useStore((s) => s.scrollProgress);
@@ -145,12 +105,11 @@ function CinematicCamera() {
     state.camera.position.y = 1.2 + Math.sin(t * 0.12) * 0.15 - scrollProgress * 0.8;
     state.camera.position.z = 8 - scrollProgress * 2;
     state.camera.lookAt(0, scrollProgress * -0.3, 0);
-    state.camera.updateProjectionMatrix();
   });
   return null;
 }
 
-function SceneContent() {
+function SceneContent({ profile }) {
   return (
     <>
       <color attach="background" args={['#020406']} />
@@ -158,55 +117,85 @@ function SceneContent() {
       <ambientLight intensity={0.12} />
       <directionalLight position={[6, 4, 5]} intensity={2.2} color="#38bdf8" />
       <directionalLight position={[-4, -2, -6]} intensity={1.2} color="#6366f1" />
-      <pointLight position={[0, 5, -2]} intensity={0.6} color="#fbbf24" />
-      <spotLight position={[0, 12, 2]} angle={0.2} penumbra={1} intensity={2.5} color="#e0f2fe" />
 
       <WormholePlane />
-      <DustField count={typeof window !== 'undefined' && window.innerWidth < 768 ? 400 : 900} />
+      <DustField count={profile.dustCount} />
+      <Stars radius={130} depth={60} count={profile.starCount} factor={3} saturation={0.2} fade speed={0.4} />
 
-      <Stars radius={130} depth={60} count={4000} factor={3.5} saturation={0.2} fade speed={0.5} />
-
-      <OrbitingPlanet radius={6} speed={0.12} size={0.35} color="#1e3a5f" offset={0} />
-      <OrbitingPlanet radius={9} speed={0.08} size={0.2} color="#4a3728" offset={2} />
-      <OrbitingPlanet radius={11} speed={0.05} size={0.5} color="#312e81" offset={4} />
-
-      <Satellite orbit={4} speed={0.4} offset={0} />
-      <Satellite orbit={5.5} speed={0.25} offset={1.5} />
-      <Satellite orbit={7} speed={0.18} offset={3} />
-
-      <Suspense fallback={null}>
-        <Center>
-          <EnduranceShip />
-        </Center>
-      </Suspense>
+      {profile.enableShip && (
+        <Suspense fallback={null}>
+          <Center>
+            <EnduranceShip />
+          </Center>
+        </Suspense>
+      )}
 
       <CinematicCamera />
 
-      <EffectComposer multisampling={0}>
-        <Bloom intensity={0.45} luminanceThreshold={0.2} luminanceSmoothing={0.9} mipmapBlur />
-        <Vignette eskil={false} offset={0.15} darkness={0.85} />
-      </EffectComposer>
+      {profile.enablePostFX && (
+        <EffectComposer multisampling={0}>
+          <Bloom intensity={0.35} luminanceThreshold={0.25} mipmapBlur />
+          <Vignette eskil={false} offset={0.15} darkness={0.8} />
+        </EffectComposer>
+      )}
     </>
   );
 }
 
+function WebGLFallback() {
+  return (
+    <div
+      className="fixed inset-0 z-0 pointer-events-none"
+      style={{
+        background: 'radial-gradient(ellipse at 50% 30%, #0c1929 0%, #020406 70%)',
+      }}
+      aria-hidden
+    />
+  );
+}
+
 export default function CosmicUniverse() {
+  const [profile] = useState(() => getDeviceProfile());
+  const [webglLost, setWebglLost] = useState(false);
+
+  useEffect(() => {
+    const onLost = (e) => {
+      e.preventDefault();
+      setWebglLost(true);
+    };
+    document.addEventListener('webglcontextlost', onLost, true);
+    return () => document.removeEventListener('webglcontextlost', onLost, true);
+  }, []);
+
+  if (!profile.enable3D || webglLost) {
+    return <WebGLFallback />;
+  }
+
   return (
     <div className="fixed inset-0 z-0 pointer-events-none" aria-hidden>
       <Canvas
         camera={{ position: [0, 1.2, 8], fov: 48, near: 0.1, far: 200 }}
-        gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
-        dpr={[1, Math.min(2, typeof window !== 'undefined' ? window.devicePixelRatio : 1.5)]}
+        gl={{
+          antialias: false,
+          alpha: false,
+          powerPreference: 'default',
+          failIfMajorPerformanceCaveat: false,
+        }}
+        dpr={[1, 1.25]}
+        frameloop="always"
         style={{ pointerEvents: 'none' }}
+        onCreated={({ gl }) => gl.setClearColor('#020406')}
       >
-        <SceneContent />
+        <SceneContent profile={profile} />
       </Canvas>
     </div>
   );
 }
 
-try {
-  useGLTF.preload(ASSETS.enduranceModel);
-} catch {
-  /* model optional */
+if (typeof window !== 'undefined' && getDeviceProfile().enableShip) {
+  try {
+    useGLTF.preload(ASSETS.enduranceModel);
+  } catch {
+    /* optional */
+  }
 }
