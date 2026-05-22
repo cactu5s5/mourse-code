@@ -27,7 +27,7 @@ function defaultProfile(lite, ctx = {}) {
     enable3D: !reducedMotion,
     enableLenis: !reducedMotion && !ctx.coarsePointer,
     enablePostFX: !lite && !narrow,
-    enableShip: !lite && wide,
+    enableShip: !reducedMotion,
     enablePlanets: !lite && !reducedMotion,
     starCount: lite ? 1800 : narrow ? 2800 : 3500,
     dustCount: lite ? 300 : narrow ? 500 : 700,

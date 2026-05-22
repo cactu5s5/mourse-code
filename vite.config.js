@@ -2,7 +2,9 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig({
-  // Local dev: /. GitHub Pages: npm run build:pages (--base /Morse-code-translator/)
+  // Relative asset URLs keep the production build working from GitHub Pages,
+  // local static servers, and direct dist previews.
+  base: './',
   plugins: [react()],
   server: {
     port: 5173,

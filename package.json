@@ -6,9 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build:pages": "vite build --base /Morse-Code-AR-EN-Translator/",
+    "build:pages": "vite build",
     "preview": "vite preview",
-    "preview:pages": "npm run build:pages && vite preview --base /Morse-Code-AR-EN-Translator/"
+    "preview:pages": "npm run build:pages && vite preview"
   },
   "dependencies": {
     "@react-spring/web": "^10.0.3",
