@@ -60,7 +60,7 @@ export default function Footer() {
           >
             INSTAGRAM
           </a>
-          <a href="https://github.com" className="hover:text-ice transition-colors" target="_blank" rel="noreferrer">
+          <a href="https://github.com/cactu5s5/mourse-code" className="hover:text-ice transition-colors" target="_blank" rel="noreferrer">
             GITHUB
           </a>
         </div>

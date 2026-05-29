@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { arabicMorse, englishMorse, numbersMorse, symbolsMorse } from '../utils/morseDictionary.js';
+import audioEngine from './AudioEngine';
 
-export default function LearningPanel({ soundEngine, onTriggerPulse }) {
+export default function LearningPanel({ onTriggerPulse }) {
   const [activeTab, setActiveTab] = useState('arabic');
   const [searchQuery, setSearchQuery] = useState('');
   const [playingChar, setPlayingChar] = useState(null);
@@ -25,7 +26,7 @@ export default function LearningPanel({ soundEngine, onTriggerPulse }) {
     setPlayingChar(char);
     
     // Play Morse Audio and trigger active pulse animation
-    soundEngine.playMorse(
+    audioEngine.playMorse(
       morse,
       (type, durationMs) => {
         if (onTriggerPulse) onTriggerPulse(type, durationMs);

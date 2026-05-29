@@ -9,7 +9,7 @@ import Keyboard from './Keyboard';
 import audioEngine from './AudioEngine';
 import { glassReveal, fadeUp } from '../config/animations';
 
-export default function SignalConsole({ soundEngine }) {
+export default function SignalConsole() {
   const {
     mode,
     toggleMode,
@@ -24,13 +24,12 @@ export default function SignalConsole({ soundEngine }) {
     setWpm,
     setPitch,
     isTransmitting,
-    setTransmitting,
-    setActiveSignal,
-    addHistory,
+    pulseIndex,
+    transmit,
+    stopTransmission,
   } = useStore();
 
   const [detectedLang, setDetectedLang] = useState('unknown');
-  const [pulseIndex, setPulseIndex] = useState(-1);
   const [copied, setCopied] = useState(false);
 
   const encodedMorse = useMemo(() => translateTextToMorse(textInput), [textInput]);
@@ -44,46 +43,6 @@ export default function SignalConsole({ soundEngine }) {
   useEffect(() => {
     if (mode === 'encode') setDetectedLang(detectLanguage(textInput));
   }, [textInput, mode]);
-
-  useEffect(() => {
-    soundEngine.setWpm(wpm);
-  }, [wpm, soundEngine]);
-
-  useEffect(() => {
-    soundEngine.setFrequency(pitch);
-  }, [pitch, soundEngine]);
-
-  const handleTransmit = useCallback(() => {
-    const morse = mode === 'encode' ? encodedMorse : morseInput;
-    if (!morse?.trim()) return;
-
-    setTransmitting(true);
-    let idx = 0;
-    soundEngine.playMorse(
-      morse,
-      (type) => {
-        setActiveSignal(type === 'dot' ? '.' : '-');
-        setPulseIndex(idx++);
-        setTimeout(() => setActiveSignal(null), 80);
-      },
-      () => {
-        setTransmitting(false);
-        setPulseIndex(-1);
-        addHistory({
-          mode,
-          input: mode === 'encode' ? textInput : morseInput,
-          output: mode === 'encode' ? encodedMorse : decodedText,
-          lang: detectedLang,
-        });
-      }
-    );
-  }, [mode, encodedMorse, morseInput, textInput, decodedText, detectedLang, soundEngine, setTransmitting, setActiveSignal, addHistory]);
-
-  const handleStop = () => {
-    soundEngine.stopMorse();
-    setTransmitting(false);
-    setPulseIndex(-1);
-  };
 
   const handleCopy = async () => {
     const text = mode === 'encode' ? encodedMorse : decodedText;
@@ -215,10 +174,10 @@ export default function SignalConsole({ soundEngine }) {
             <input type="range" min="300" max="1200" step="50" value={pitch} onChange={(e) => setPitch(Number(e.target.value))} />
           </div>
           <div className="action-strip flex flex-wrap gap-2 mt-auto">
-            <MagneticButton variant="primary" onClick={handleTransmit} disabled={isTransmitting}>
+            <MagneticButton variant="primary" onClick={transmit} disabled={isTransmitting}>
               ⚡ Transmit
             </MagneticButton>
-            <MagneticButton onClick={handleStop} disabled={!isTransmitting}>
+            <MagneticButton onClick={stopTransmission} disabled={!isTransmitting}>
               Stop
             </MagneticButton>
             <MagneticButton onClick={handleCopy}>{copied ? '✓ Copied' : 'Copy'}</MagneticButton>
@@ -228,11 +187,10 @@ export default function SignalConsole({ soundEngine }) {
           </div>
         </div>
 
-        <Oscilloscope soundEngine={soundEngine} />
+        <Oscilloscope audioEngine={audioEngine} />
         <Keyboard
           inputValue={mode === 'encode' ? textInput : morseInput}
           setInputValue={mode === 'encode' ? setTextInput : setMorseInput}
-          soundEngine={soundEngine}
         />
       </div>
     </motion.section>

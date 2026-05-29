@@ -136,7 +136,7 @@ class AudioEngine {
   // ── Morse Transmission ────────────────────────────────
 
   playImmediateTone(durationSec) {
-    if (!this.ctx) return;
+    this.init();
     this.resume();
     const now = this.ctx.currentTime;
     this.oscGain.gain.cancelScheduledValues(now);
@@ -144,6 +144,18 @@ class AudioEngine {
     this.oscGain.gain.linearRampToValueAtTime(this.volume, now + 0.005);
     this.oscGain.gain.setValueAtTime(this.volume, now + durationSec - 0.005);
     this.oscGain.gain.linearRampToValueAtTime(0, now + durationSec);
+
+    // Trigger visualizer
+    this.isPlaying = true;
+    setTimeout(() => {
+      if (this.isPlaying && this.timeouts.length === 0) {
+        this.isPlaying = false;
+      }
+    }, durationSec * 1000);
+  }
+
+  stop() {
+    this.stopMorse();
   }
 
   stopMorse() {

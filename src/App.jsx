@@ -16,16 +16,13 @@ import Footer from './components/Footer';
 import useStore from './store/useStore';
 import useLenis from './hooks/useLenis';
 import useKeyboardShortcuts from './hooks/useKeyboardShortcuts';
-import { translateTextToMorse } from './utils/translator';
-import { MorseSoundEngine } from './components/soundEngine.js';
 import audioEngine from './components/AudioEngine';
 
-const soundEngine = new MorseSoundEngine();
 const LearningPanelLazy = lazy(() => import('./components/LearningPanel'));
 
 export default function App() {
   const isBooted = useStore((s) => s.isBooted);
-  const { wpm, pitch, volume, setWpm, setPitch, setVolume, themeAccent, cosmicMode } = useStore();
+  const { wpm, pitch, volume, setWpm, setPitch, setVolume, themeAccent, cosmicMode, transmit, stopTransmission } = useStore();
 
   useLenis(isBooted);
 
@@ -35,12 +32,10 @@ export default function App() {
   }, [themeAccent, cosmicMode]);
 
   useEffect(() => {
-    soundEngine.setWpm(wpm);
     audioEngine.setWpm(wpm);
   }, [wpm]);
 
   useEffect(() => {
-    soundEngine.setFrequency(pitch);
     audioEngine.setFrequency(pitch);
   }, [pitch]);
 
@@ -48,21 +43,7 @@ export default function App() {
     audioEngine.setVolume(volume);
   }, [volume]);
 
-  const handleTransmit = () => {
-    const { mode, textInput, morseInput } = useStore.getState();
-    const morse = mode === 'encode' ? translateTextToMorse(textInput) : morseInput;
-    if (!morse?.trim()) return;
-    useStore.getState().setTransmitting(true);
-    soundEngine.playMorse(morse, () => {}, () => useStore.getState().setTransmitting(false));
-  };
-
-  const handleStop = () => {
-    soundEngine.stop();
-    audioEngine.stopMorse();
-    useStore.getState().setTransmitting(false);
-  };
-
-  useKeyboardShortcuts(handleTransmit, handleStop);
+  useKeyboardShortcuts(transmit, stopTransmission);
 
   return (
     <>
@@ -95,7 +76,7 @@ export default function App() {
             <HeroSection />
 
             <div className="transceiver-station-wrapper max-w-7xl mx-auto px-4 sm:px-6 pb-24">
-              <SignalConsole soundEngine={soundEngine} />
+              <SignalConsole />
 
               <motion.section
                 id="reference-deck"
@@ -106,7 +87,7 @@ export default function App() {
                 transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
               >
                 <Suspense fallback={<div className="skeleton-loader h-64 rounded-lg" />}>
-                  <LearningPanelLazy soundEngine={soundEngine} onTriggerPulse={() => {}} />
+                  <LearningPanelLazy onTriggerPulse={() => {}} />
                 </Suspense>
               </motion.section>
             </div>

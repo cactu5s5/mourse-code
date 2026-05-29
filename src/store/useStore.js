@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+import { translateTextToMorse, translateMorseToText, detectLanguage } from '../utils/translator';
+import audioEngine from '../components/AudioEngine';
 
 const COSMIC_QUOTES = [
   'Love is the one thing that transcends time and space.',
@@ -43,6 +45,51 @@ const useStore = create(
       setActiveSignal: (v) => set({ activeSignal: v }),
       isTransmitting: false,
       setTransmitting: (v) => set({ isTransmitting: v }),
+      pulseIndex: -1,
+      setPulseIndex: (v) => set({ pulseIndex: v }),
+
+      transmit: () => {
+        const { mode, textInput, morseInput, isTransmitting, decodeLang } = get();
+        if (isTransmitting) return;
+
+        const morse = mode === 'encode' ? translateTextToMorse(textInput) : morseInput;
+        if (!morse?.trim()) return;
+
+        audioEngine.init();
+        audioEngine.resume();
+
+        set({ isTransmitting: true, pulseIndex: 0 });
+
+        let idx = 0;
+        audioEngine.playMorse(
+          morse,
+          (type) => {
+            set({
+              activeSignal: type === 'dot' ? '.' : '-',
+              pulseIndex: idx++,
+            });
+            setTimeout(() => {
+              if (get().activeSignal !== null) {
+                set({ activeSignal: null });
+              }
+            }, 80);
+          },
+          () => {
+            set({ isTransmitting: false, pulseIndex: -1 });
+            get().addHistory({
+              mode,
+              input: mode === 'encode' ? textInput : morseInput,
+              output: mode === 'encode' ? morse : translateMorseToText(morseInput, decodeLang),
+              lang: mode === 'encode' ? detectLanguage(textInput) : decodeLang,
+            });
+          }
+        );
+      },
+
+      stopTransmission: () => {
+        audioEngine.stopMorse();
+        set({ isTransmitting: false, pulseIndex: -1, activeSignal: null });
+      },
 
       // Audio
       isSoundtrackOn: false,
