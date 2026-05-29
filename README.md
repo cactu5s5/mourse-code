@@ -1,6 +1,6 @@
 ﻿# Morse Code Translator - Interstellar Edition
 
-Live: https://xdc7-css.github.io/Morse-Code-AR-EN-Translator/
+Live: (https://cactu5s5.github.io/mourse-code/)
 
 GitHub Pages must use the Actions artifact, not the repository root.
 
