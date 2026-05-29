@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   // Relative asset URLs keep the production build working from GitHub Pages,
   // local static servers, and direct dist previews.
-  base: './',
+  base: '/mourse-code/',
   plugins: [react()],
   server: {
     port: 5173,
